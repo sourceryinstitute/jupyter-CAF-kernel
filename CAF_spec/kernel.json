@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "python3",
+    "-m",
+    "jupyter_CAF_kernel",
+    "-f",
+    "{connection_file}"
+  ],
+  "display_name": "Coarray Fortran",
+  "language": "fortran",
+  "env": {
+    "NUM_IMAGES": 4
+  }
+}

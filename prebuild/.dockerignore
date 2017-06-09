@@ -1,0 +1,9 @@
+*.log
+log.*
+.git
+.gitignore
+hooks
+*~
+Makefile
+#*#
+\#*\#
