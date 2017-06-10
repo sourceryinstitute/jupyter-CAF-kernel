@@ -25,7 +25,18 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison cmake dpk
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && tar xzvf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
-    && ./install.sh --yes-to-all --num-threads "$(nproc)" --package gcc --install-version 7.1.0 --install-prefix /usr/local \
+    && ./install.sh --only-download --package gcc --install-version 7.1.0 \
+    && cd prerequisites/downloads/ \
+    && tar xf gcc-7.1.0.tar* \
+    && cd gcc-7.1.0 \
+    && mkdir objdir \
+    && cd objdir \
+    && ../configure --enable-languages=c,c++,fortran --disable-multilib --disable-bootstrap --build=x86_64-linux-gnu \
+    && make -j"$(nproc)" \
+    && make install-strip \
+    && make distclean \
+    && cd ../.. \
+    && rm -rf ./gcc* \
     && /usr/local/bin/gcc --version \
     && gcc --version \
     && echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf \
