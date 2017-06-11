@@ -1,4 +1,4 @@
-NAME = sourceryinstitute/jupyter-CAF-kernel
+NAME = sourceryinstitute/jupyter-caf-kernel
 #WORKDIR = ${HOME}/Sandbox
 
 default: build

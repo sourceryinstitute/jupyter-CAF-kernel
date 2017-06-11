@@ -10,8 +10,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison cmake dpk
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
+    && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
     build-essential \
     elfutils \
     file \
@@ -45,14 +44,19 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison cmake dpk
     && dpkg-divert --divert /usr/bin/g++.orig --rename /usr/bin/g++ \
     && dpkg-divert --divert /usr/bin/gfortran.orig --rename /usr/bin/gfortran \
     && update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999 \
+    && cd ../.. \
     && ./install.sh --yes-to-all --package mpich -j "$(nproc)" -c /usr/local/bin/gcc -f /usr/local/bin/gfortran -C /usr/local/bin/g++ --install-prefix /usr/local \
     && rm -rf ./prerequisites/{builds,downloads}/* \
-    && ./install.sh --yes-to-all -j "$(nproc)" -c /usr/local/bin/gcc -f /usr/local/bin/gfortran -C /usr/local/bin/g++ --install-prefix=/usr/local \
-    && caf --version \
-    && cd prerequisites/builds/opencoarrays/${OPENCOARRAYS_VERSION} \
+    && echo "Installing OpenCoarrays using CMake in $(pwd)" \
+    && mkdir build \
+    && cd build \
+    && FC=/usr/local/bin/gfortran CC=/usr/local/bin/gcc cmake .. \
+    && make -j "$(nproc)" \
     && ctest --output-on-failure \
-    && cd ../../../../.. \
-    && pwd \
+    && make install \
+    && cd .. \
+    && rm -rf build \
+    && caf --version \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
