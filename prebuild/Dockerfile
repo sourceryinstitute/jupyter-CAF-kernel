@@ -56,6 +56,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison cmake dpk
     && make install \
     && cd .. \
     && rm -rf build \
+    && cd \
+    && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
