@@ -6,13 +6,12 @@ USER root
 
 ARG OPENCOARRAYS_VERSION=1.9.0
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev flex gcc gfortran g++ libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev flex gcc gfortran g++ libc-dev libc6-dev libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
-    build-essential \
-    elfutils \
+    make \
     file \
     libisl-dev \
     libmpc-dev \
@@ -45,10 +44,11 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev 
     && update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999 \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
+    && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libc-dev libc6-dev libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
@@ -61,10 +61,13 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libfil
     && ./install.sh --yes-to-all --package mpich -j "$(nproc)" -c /usr/local/bin/gcc -f /usr/local/bin/gfortran -C /usr/local/bin/g++ --install-prefix /usr/local \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
+    && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev libfile-pushd-perl" \
+COPY ./jupyter-CAF-kernel jupyter-CAF-kernel
+
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev libc-dev libc6-dev libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
@@ -85,6 +88,11 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev 
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
+    && pip install -U metakernel \
+    && pip install -e jupyter-CAF-kernel \
+    && jupyter-kernelspec install jupyter-CAF-kernel/CAF_spec/ \
+    && jupyter-kernelspec list \
+    && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
