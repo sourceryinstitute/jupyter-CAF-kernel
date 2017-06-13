@@ -88,7 +88,6 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev 
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
-    && pip install -U metakernel \
     && pip install -e jupyter-CAF-kernel \
     && jupyter-kernelspec install jupyter-CAF-kernel/CAF_spec/ \
     && jupyter-kernelspec list \

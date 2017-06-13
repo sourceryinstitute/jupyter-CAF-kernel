@@ -1,30 +1,11 @@
-from __future__ import print_function
-
 from queue import Queue
 from threading import Thread
 
-metakernel = False
-try:
-    from metakernel import MetaKernel as Kernel
-    metakernel = True
-except:
-    try:
-        from ipykernel.kernelbase import Kernel
-    except ImportError:
-        from IPython.kernel.zmq.kernelbase import Kernel
-
-try:
-    from metakernel import register_ipython_magics
-except:
-    from ipykernel.kernelbase import register_ipython_magics
-
-register_ipython_magics()
-
+from ipykernel.kernelbase import Kernel
 import re
 import subprocess
 import tempfile
 import os
-import os.path as path
 
 
 class RealTimeSubprocess(subprocess.Popen):
@@ -41,7 +22,7 @@ class RealTimeSubprocess(subprocess.Popen):
         self._write_to_stdout = write_to_stdout
         self._write_to_stderr = write_to_stderr
 
-        super(RealTimeSubprocess, self).__init__(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+        super().__init__(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
 
         self._stdout_queue = Queue()
         self._stdout_thread = Thread(target=RealTimeSubprocess._enqueue_output, args=(self.stdout, self._stdout_queue))
@@ -85,18 +66,15 @@ class RealTimeSubprocess(subprocess.Popen):
 
 
 class CAFKernel(Kernel):
-    implementation = 'jupyter_CAF_kernel'
+    implementation = 'jupyter-CAF-kernel'
     implementation_version = '0.1.0'
     language = 'Fortran'
     language_version = 'Fortran 2015'
-    language_info = {'name': 'Fortran',
-                     'mimetype': 'text/x-fortran',
-                     'pygments_lexer': 'fortran',
-                     'codemirror_mode': 'fortran',
+    language_info = {'name': 'fortran',
+                     'mimetype': 'text/plain',
                      'file_extension': '.f90'}
     banner = "Coarray Fortran kernel.\n" \
              "Uses GFortran & OpenCoarrays & creates source code files and executables in a temporary folder.\n"
-    magic_prefixes = dict(magic='%', shell='$', help='?')
 
     def __init__(self, *args, **kwargs):
         super(CAFKernel, self).__init__(*args, **kwargs)
@@ -131,44 +109,38 @@ class CAFKernel(Kernel):
         args = ['caf', source_filename] + fcflags + ['-o', binary_filename] + ldflags
         return self.create_jupyter_subprocess(args)
 
-    def _filter_magics(self, code):
+    # def _filter_magics(self, code):
 
-        magics = {'cflags': [],
-                  'ldflags': [],
-                  'args': [],
-                  'num_procs': 4}
+    #     magics = {'cflags': [],
+    #               'ldflags': [],
+    #               'args': [],
+    #               'num_procs': os.getenv('NUM_PROCS', '4')}
 
-        if "NUM_PROCS" in os.environ:
-            magics['num_procs'] = int(os.environ['NUM_PROCS'])
 
-        for line in code.splitlines():
-            if line.startswith(('%%', '%')):
-                key, value = line[2:].split(":", 2)
-                key = key.strip().lower()
+    #     for line in code.splitlines():
+    #         if line.startswith('%%'):
+    #             key, value = line[2:].split(":", 2)
+    #             key = key.strip().lower()
 
-                if key in ['ldflags', 'fcflags']:
-                    for flag in value.split():
-                        magics[key] += [flag]
-                elif key == 'args':
-                    # Split arguments respecting quotes
-                    for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
-                        magics['args'] += [argument.strip('"')]
-                elif key == 'num_procs':
-                    magics['num_procs'] = int(value)
-                else:
-                    super(CAFKernel,self).call_magic(line)
-            elif line.startswith(('$', '?')):
-                super(CAFKernel,self).call_magic(line)
+    #             if key in ['ldflags', 'fcflags']:
+    #                 for flag in value.split():
+    #                     magics[key] += [flag]
+    #             elif key == 'args':
+    #                 # Split arguments respecting quotes
+    #                 for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
+    #                     magics['args'] += [argument.strip('"')]
+    #             elif key == 'num_procs':
+    #                 magics['num_procs'] = int(value)
 
-        return magics
+    #     return magics
 
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
 
-        magics = self._filter_magics(code)
+        # magics = self._filter_magics(code)
 
         with self.new_temp_file(suffix='.f90') as source_file:
-            for line in code:
+            for line in code.splitlines():
                 if line.startswith(('%', '%%', '$', '?')):
                     continue
                 source_file.write(line)

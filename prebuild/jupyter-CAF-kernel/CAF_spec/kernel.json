@@ -2,12 +2,12 @@
   "argv": [
     "python3",
     "-m",
-    "jupyter_CAF_kernel",
+    "jupyter-CAF-kernel",
     "-f",
     "{connection_file}"
   ],
   "display_name": "Coarray Fortran",
-  "language": "fortran",
+  "language": "Fortran",
   "env": {
     "NUM_IMAGES": 4
   }

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='jupyter_CAF_kernel',
+setup(name='jupyter-CAF-kernel',
       version='0.1.0',
       description='Minimalistic Coarray Fortran kernel for Jupyter',
       long_description='Minimalistic OpenCoarrays/GFortran based Coarray Fortran kernel for Jupyter',
@@ -23,6 +23,6 @@ setup(name='jupyter_CAF_kernel',
           'Programming Language :: Fortran',
           'Topic :: Scientific/Engineering',
       ],
-      packages=['jupyter_CAF_kernel'],
+      packages=['jupyter-CAF-kernel'],
       keywords=['jupyter', 'kernel', 'fortran', 'coarray', 'CAF', 'coarray-fortran']
 )
