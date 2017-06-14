@@ -17,9 +17,9 @@ $(subst /,_,$(NAME))-build.stamp: Dockerfile .dockerignore hooks/build ## Target
 	touch $@
 	@hooks/build 2>&1 | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@)
 
-push: build $(subst /,_,$(NAME))-push.stamp ## Push prebuild docker image up to hub.docker.com
+push: $(subst /,_,$(NAME))-push.stamp ## Push prebuild docker image up to hub.docker.com
 
-$(subst /,_,$(NAME))-push.stamp: ## Target for doing & timestamping the push
+$(subst /,_,$(NAME))-push.stamp: build Dockerfile .dockerignore hooks/build ## Target for doing & timestamping the push
 	touch $@
 	docker push $(NAME) | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@)
 	[[ -n "${SI_jupyter_CAF_kernel_UBADGER_ENDPOINT}" ]] && curl -X POST ${SI_jupyter_CAF_kernel_UBADGER_ENDPOINT}
