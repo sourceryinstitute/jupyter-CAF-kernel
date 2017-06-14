@@ -24,17 +24,11 @@ $(subst /,_,$(NAME))-push.stamp: ## Target for doing & timestamping the push
 	docker push $(NAME) | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@)
 	[[ -n "${SI_jupyter_CAF_kernel_UBADGER_ENDPOINT}" ]] && curl -X POST ${SI_jupyter_CAF_kernel_UBADGER_ENDPOINT}
 
-run: $(subst /,_,$(NAME))-run.stamp ## Target to run jupyter-hub docker server
+run: ## Target to run jupyter-hub docker server
+	docker run -i -t -p 8888:8888 $(NAME) | tee $(subst /,_,$(NAME))-run.log
 
-$(subst /,_,$(NAME))-run.stamp: ## Target for doing the actual run and timestamp
-	touch $@
-	docker run -i -t -p 8888:8888 $(NAME) | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@)
-
-runclean: $(subst /,_,$(NAME))-runclean.stamp ## Target to run jupyter-hub docker server, discarding changes
-
-$(subst /,_,$(NAME))-runclean.stamp: ## Target for doing the actual runclean and timestamp
-	touch $@
-	docker run --rm -i -t -p 8888:8888 $(NAME) | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@)
+runclean: ## Target to run jupyter-hub docker server, discarding changes
+	docker run --rm -i -t -p 8888:8888 $(NAME) | tee $(subst /,_,$(NAME))-runclean.log
 
 clean:
 	rm -rf $(subst /,_,$(NAME))*.stamp

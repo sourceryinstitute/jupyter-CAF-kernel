@@ -6,13 +6,16 @@ USER root
 
 ARG OPENCOARRAYS_VERSION=1.9.0
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev flex gcc gfortran g++ libc-dev libc6-dev libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev flex libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
-    make \
     file \
+    g++ \
+    gcc \
+    gfortran \
+    make \
     libisl-dev \
     libmpc-dev \
     libtool \
@@ -48,7 +51,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev 
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libc-dev libc6-dev libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
@@ -65,9 +68,9 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils dpkg-dev libc-d
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
-COPY ./jupyter-CAF-kernel jupyter-CAF-kernel
+COPY ./jupyter-caf-kernel jupyter-caf-kernel
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev libc-dev libc6-dev libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev libfile-pushd-perl" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
@@ -88,8 +91,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev 
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
-    && pip install -e jupyter-CAF-kernel \
-    && jupyter-kernelspec install jupyter-CAF-kernel/CAF_spec/ \
+    && pip install -e ./jupyter-caf-kernel \
+    && jupyter-kernelspec install ./jupyter-caf-kernel/caf_kernel/ \
     && jupyter-kernelspec list \
     && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
