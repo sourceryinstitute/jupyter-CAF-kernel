@@ -1,5 +1,0 @@
-include ../../LICENSE.txt
-prune .git
-prune docs/build
-prune dist
-prune build

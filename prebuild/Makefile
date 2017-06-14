@@ -38,3 +38,4 @@ $(subst /,_,$(NAME))-runclean.stamp: ## Target for doing the actual runclean and
 
 clean:
 	rm -rf $(subst /,_,$(NAME))*.stamp
+	find . -name 'Untitled*.ipynd' -exec rm -f {} \;

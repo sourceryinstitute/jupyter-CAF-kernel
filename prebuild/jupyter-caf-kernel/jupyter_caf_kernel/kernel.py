@@ -65,19 +65,19 @@ class RealTimeSubprocess(subprocess.Popen):
             self._write_to_stderr(stderr_contents)
 
 
-class CAFKernel(Kernel):
-    implementation = 'jupyter-CAF-kernel'
-    implementation_version = '0.1.0'
+class CafKernel(Kernel):
+    implementation = 'jupyter_caf_kernel'
+    implementation_version = '0.1'
     language = 'Fortran'
     language_version = 'Fortran 2015'
     language_info = {'name': 'fortran',
                      'mimetype': 'text/plain',
                      'file_extension': '.f90'}
     banner = "Coarray Fortran kernel.\n" \
-             "Uses GFortran & OpenCoarrays & creates source code files and executables in a temporary folder.\n"
+             "Uses gfortran with OpenCoarrays, and creates source code files and executables in a temporary folder.\n"
 
     def __init__(self, *args, **kwargs):
-        super(CAFKernel, self).__init__(*args, **kwargs)
+        super(CafKernel, self).__init__(*args, **kwargs)
         self.files = []
 
     def cleanup_files(self):
@@ -109,41 +109,42 @@ class CAFKernel(Kernel):
         args = ['caf', source_filename] + fcflags + ['-o', binary_filename] + ldflags
         return self.create_jupyter_subprocess(args)
 
-    # def _filter_magics(self, code):
+    def _filter_magics(self, code):
 
-    #     magics = {'cflags': [],
-    #               'ldflags': [],
-    #               'args': [],
-    #               'num_procs': os.getenv('NUM_PROCS', '4')}
+        magics = {'fcflags': [],
+                  'ldflags': [],
+                  'args': [],
+                  'num_images': os.getenv('NUM_IMAGES', '2')
+                }
 
 
-    #     for line in code.splitlines():
-    #         if line.startswith('%%'):
-    #             key, value = line[2:].split(":", 2)
-    #             key = key.strip().lower()
+        for line in code.splitlines():
+            if line.startswith('%'):
+                key, value = line[1:].split(":", 2)
+                key = key.strip().lower()
 
-    #             if key in ['ldflags', 'fcflags']:
-    #                 for flag in value.split():
-    #                     magics[key] += [flag]
-    #             elif key == 'args':
-    #                 # Split arguments respecting quotes
-    #                 for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
-    #                     magics['args'] += [argument.strip('"')]
-    #             elif key == 'num_procs':
-    #                 magics['num_procs'] = int(value)
+                if key in ['ldflags', 'fcflags']:
+                    for flag in value.split():
+                        magics[key] += [flag]
+                elif key == "args":
+                    # Split arguments respecting quotes
+                    for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
+                        magics['args'] += [argument.strip('"')]
+                elif key == "num_images":
+                    magics['num_images'] = value
 
-    #     return magics
+        return magics
 
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
 
-        # magics = self._filter_magics(code)
+        magics = self._filter_magics(code)
 
         with self.new_temp_file(suffix='.f90') as source_file:
             for line in code.splitlines():
                 if line.startswith(('%', '%%', '$', '?')):
                     continue
-                source_file.write(line)
+                source_file.write(line + '\n')
             source_file.flush()
             with self.new_temp_file(suffix='.out') as binary_file:
                 p = self.compile_with_caf_wrapper(source_file.name, binary_file.name, magics['fcflags'], magics['ldflags'])
@@ -152,18 +153,18 @@ class CAFKernel(Kernel):
                 p.write_contents()
                 if p.returncode != 0:  # Compilation failed
                     self._write_to_stderr(
-                            "[CAF kernel] caf wrapper/GFortran exited with code {}, the executable will not be executed".format(
+                            "[Coarray Fortran kernel] gfortran exited with code {}, the executable will not be executed".format(
                                     p.returncode))
                     return {'status': 'ok', 'execution_count': self.execution_count, 'payload': [],
                             'user_expressions': {}}
 
-        p = self.create_jupyter_subprocess(['cafrun', '-np', str(magics['num_procs']), binary_file.name] + magics['args'])
+        p = self.create_jupyter_subprocess(['cafrun', '-np', str(magics['num_images']), binary_file.name] + magics['args'])
         while p.poll() is None:
             p.write_contents()
         p.write_contents()
 
         if p.returncode != 0:
-            self._write_to_stderr("[CAF kernel] Executable exited with code {}".format(p.returncode))
+            self._write_to_stderr("[Coarray Fortran kernel] Executable exited with code {}".format(p.returncode))
         return {'status': 'ok', 'execution_count': self.execution_count, 'payload': [], 'user_expressions': {}}
 
     def do_shutdown(self, restart):
