@@ -5,6 +5,7 @@ log.*
 hooks
 ./prebuild
 ./prebuild/*
+Untitled*.ipynb
 *~
 Makefile
 #*#

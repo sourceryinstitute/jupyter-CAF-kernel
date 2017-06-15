@@ -4,6 +4,7 @@ log.*
 .gitignore
 hooks
 *~
+Untitled*.ipynb
 Makefile
 #*#
 \#*\#

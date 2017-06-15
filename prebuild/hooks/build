@@ -15,7 +15,7 @@ git fetch -v --all --depth=9999999 --update-shallow
 git tag --list
 git branch
 
-d_repo='sourceryinstitute/jupyter-caf-kernel'
+d_repo='sourceryinstitute/jupyter-CAF-kernel'
 d_git_remotes=($(git remote show))
 echo "${#d_git_remotes[@]} git remotes found."
 n_remotes=${#d_git_remotes[@]}
@@ -49,4 +49,4 @@ docker build --build-arg OPENCOARRAYS_VERSION="${opencoarrays_version}" \
 	     --build-arg VCS_VERSION="${d_vcs_describe:-${d_tag}}" \
 	     --rm \
 	     --pull \
-             -t "${IMAGE_NAME:-${d_repo}:latest}" .
+             -t "${IMAGE_NAME:-$(tr '[:upper:]' '[:lower:]' <<< "${d_repo}:latest")}" .
