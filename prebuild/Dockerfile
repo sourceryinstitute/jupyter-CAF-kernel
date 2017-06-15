@@ -104,6 +104,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev 
     && pip install -e ./jupyter-caf-kernel \
     && jupyter-kernelspec install ./jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
+    && pip install allthekernels \
     && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
@@ -112,13 +113,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev 
 
 # WORKDIR /jupyter
 
-# COPY ./ jupyter_c_kernel/
-# RUN pip install -e jupyter_c_kernel/
-
-# RUN jupyter-kernelspec install jupyter_c_kernel/c_spec/
-
-# WORKDIR /home/$NB_USER/
-
 RUN chown -R $NB_USER:users /home/$NB_USER
+
+WORKDIR /home/$NB_USER/
 
 USER $NB_USER
