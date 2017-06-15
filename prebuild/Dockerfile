@@ -96,6 +96,10 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && jupyter-kernelspec install ./jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
     && pip install allthekernels \
+    && pip install mpld3 \
+    && pip install JSAnimation \
+    && conda install -c conda-forge ipywidgets \
+    && conda install bokeh \
     && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
