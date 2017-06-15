@@ -5,58 +5,51 @@ MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 USER root
 
 ARG OPENCOARRAYS_VERSION=1.9.0
-#ENV MPICH_VERSION 3.2
 ENV GCC_VERSION 7.1.0
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev flex libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
     && apt-get update -y \
-    && apt-get -t jessie-backports upgrade -yq --no-install-recommends --no-install-suggests \
     && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
-    file \
-    g++ \
-    gcc \
-    gfortran \
     make \
+    libfile-pushd-perl \
     libisl-dev \
     libmpc-dev \
-    libtool \
     $transientBuildDeps \
-    && wget https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
-    && wget https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
+    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
+    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
-    && tar xzvf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
+    && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
+    && echo "Patching build script for MPICH to disable c++ bindings" \
+    && sed -i '33 s/configure --prefix/configure --disable-cxx --prefix/' prerequisites/build-functions/build_and_install.sh \
     && ./install.sh --only-download --package gcc --install-version ${GCC_VERSION} \
     && cd prerequisites/downloads/ \
     && tar xf gcc-${GCC_VERSION}.tar* \
     && cd gcc-${GCC_VERSION} \
     && mkdir objdir \
     && cd objdir \
-    && ../configure --enable-languages=c,c++,fortran --disable-multilib --disable-bootstrap --build="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+    && ../configure --enable-languages=c,fortran --disable-multilib --disable-bootstrap --build="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
     && make -j"$(nproc)" \
-    && make install-strip \
-    && make distclean \
+    && make -j"$(nproc)" install-strip \
     && cd ../.. \
     && rm -rf ./gcc* \
     && echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf \
     && ldconfig -v\
     && dpkg-divert --divert /usr/bin/gcc.orig --rename /usr/bin/gcc \
-    && dpkg-divert --divert /usr/bin/g++.orig --rename /usr/bin/g++ \
     && dpkg-divert --divert /usr/bin/gfortran.orig --rename /usr/bin/gfortran \
     && update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999 \
     && /usr/local/bin/gcc --version \
     && gcc --version \
     && /usr/local/bin/gfortran --version \
     && gfortran --version \
-    && cd ../../ \
-    && ./install.sh --yes-to-all --package mpich -j "$(nproc)" -c /usr/local/bin/gcc -f /usr/local/bin/gfortran -C /usr/local/bin/g++ --install-prefix /usr/local \
-    && cd \
+    && cd ../.. \
+    && ./install.sh --yes-to-all --package mpich -j "$(nproc)" --install-prefix /usr/local \
+    && cd .. \
     && mpirun --version \
-    && mpifort --version \
-    && rm -rf OpenCoarrays* opencoarrays* \
+    && rm -rf OpenCoarrays-${OPENCOARRAYS_VERSION}/ \
     && apt-get clean \
     && apt-get purge -y --auto-remove $transientBuildDeps \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
@@ -80,16 +73,14 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils bison dpkg-dev 
 
 COPY ./jupyter-caf-kernel jupyter-caf-kernel
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="apt-utils cmake dpkg-dev libfile-pushd-perl" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
     $transientBuildDeps \
     && cmake --version \
-    && wget https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
-    && wget https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
-    && tar xzvf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
+    && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
     && echo "Installing OpenCoarrays using CMake in $(pwd)" \
     && mkdir build \

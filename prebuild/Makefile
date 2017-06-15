@@ -16,13 +16,13 @@ build: $(subst /,_,$(NAME))-build.stamp ## Build docker file. Depending on which
 
 $(subst /,_,$(NAME))-build.stamp: Dockerfile .dockerignore hooks/build ## Target for doing & timestamping the build
 	touch $@
-	hooks/build 2>&1 | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@) $@
+	hooks/build 2>&1 | tee $(subst stamp,log,$@) || rm -rf $@
 
 push: $(subst /,_,$(NAME))-push.stamp ## Push prebuild docker image up to hub.docker.com
 
 $(subst /,_,$(NAME))-push.stamp: $(subst /,_,$(NAME))-build.stamp Dockerfile .dockerignore hooks/build ## Target for doing & timestamping the push
 	touch $@
-	docker push $(NAME) | tee $(subst stamp,log,$@) || rm -rf $(subst stamp,log,$@) $@
+	docker push $(NAME) | tee $(subst stamp,log,$@) || rm -rf $@
 	-curl -X POST "$(UBADGER_ENDPOINT)"
 
 run: ## Target to run jupyter-hub docker server
