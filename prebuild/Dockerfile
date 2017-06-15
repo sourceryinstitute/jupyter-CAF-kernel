@@ -9,7 +9,7 @@ ENV GCC_VERSION 7.1.0
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
     && set -v \
-    && echo "$DEBIAN_FRONTEND" \
+    && echo "${DEBIAN_FRONTEND}" \
     && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
     && apt-get update -y \
     && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
     libfile-pushd-perl \
     libisl-dev \
     libmpc-dev \
-    $transientBuildDeps \
+    ${transientBuildDeps} \
     && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
@@ -51,7 +51,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
     && mpirun --version \
     && rm -rf OpenCoarrays-${OPENCOARRAYS_VERSION}/ \
     && apt-get clean \
-    && apt-get purge -y --auto-remove $transientBuildDeps \
+    && apt-get purge -y --auto-remove ${transientBuildDeps} \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
 # Build-time metadata as defined at http://label-schema.org
@@ -60,26 +60,26 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
     ARG VCS_URL
     ARG VCS_VERSION=latest
     LABEL org.label-schema.schema-version="1.0" \
-          org.label-schema.build-date="$BUILD_DATE" \
+          org.label-schema.build-date="${BUILD_DATE}" \
           org.label-schema.name="jupyter-CAF-kernel" \
           org.label-schema.description="Fortran Jupyter kernel with OpenCoarrays and MPICH backend" \
           org.label-schema.url="https://github.com/sourceryinstitute/jupyter-CAF-kernel/" \
-          org.label-schema.vcs-ref="$VCS_REF" \
-          org.label-schema.vcs-url="$VCS_URL" \
-          org.label-schema.version="$VCS_VERSION" \
+          org.label-schema.vcs-ref="${VCS_REF}" \
+          org.label-schema.vcs-url="${VCS_URL}" \
+          org.label-schema.version="${VCS_VERSION}" \
           org.label-schema.vendor="SourceryInstitute" \
           org.label-schema.license="MIT" \
           org.label-schema.docker.cmd="docker run -i -t -p 8888:8888 sourceryinstitute/jupyter-CAF-kernel"
 
-COPY ./jupyter-caf-kernel jupyter-caf-kernel
+COPY ./jupyter-caf-kernel /jupyter/jupyter-caf-kernel
 
 ARG RUN_TESTS=true
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && set -v \
-    && echo "$DEBIAN_FRONTEND" \
+    && echo "${DEBIAN_FRONTEND}" \
     && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
-    $transientBuildDeps \
+    ${transientBuildDeps} \
     && cmake --version \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
@@ -94,24 +94,26 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
-    && pip install -e ./jupyter-caf-kernel \
-    && jupyter-kernelspec install ./jupyter-caf-kernel/Coarray-Fortran/ \
+    && pip install -e /jupyter/jupyter-caf-kernel \
+    && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
     && pip install allthekernels \
     && pip install mpld3 \
     && pip install JSAnimation \
-    && conda install -c conda-forge ipywidgets \
-    && conda install bokeh \
+    && pip install ipywidgets \
+    && pip install bokeh \
+    && rmdir work \
+    && rm -rf jupyter-caf-kernel \
     && apt-get clean \
-    && apt-get purge -y --auto-remove $transientBuildDeps \
+    && apt-get purge -y --auto-remove ${transientBuildDeps} \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
 
 # RUN mkdir /jupyter
 
 # WORKDIR /jupyter
 
-RUN chown -R $NB_USER:users /home/$NB_USER
+RUN chown -R ${NB_USER}:users /home/${NB_USER}
 
-WORKDIR /home/$NB_USER/
+WORKDIR /home/${NB_USER}/
 
-USER $NB_USER
+USER ${NB_USER}
