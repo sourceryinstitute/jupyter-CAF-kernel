@@ -21,7 +21,7 @@
  * Launch a full JupyterHub [Binder] environment in the cloud with access
    to
    [other science kernels][jupyter-stacks] in
-   addition to Fortran with [OpenCoarrays]: __http://bit.ly/CAF-binder__
+   addition to Fortran with [OpenCoarrays]: __http://bit.ly/CAF-Binder__
 
 ## Run locally
 
