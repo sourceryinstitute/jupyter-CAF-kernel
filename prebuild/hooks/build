@@ -36,6 +36,13 @@ d_vcs_describe="$(git describe --tags --always || true)"
 d_tag="${IMAGE_NAME##*:}"
 d_tag="${d_tag:-${branch_name}-$(date +%s)}"
 
+if [[ ${IMAGE_NAME:-} ]]; then
+  export RUN_TESTS=false
+else
+  export RUN_TESTS=true
+fi
+
+
 opencoarrays_version="$(curl -s https://api.github.com/repos/sourceryinstitute/OpenCoarrays/releases/latest | grep tag_name | cut -d '"' -f 4)" || true
 if [[ -n "${open_coarrays_version:-}" ]]; then
   opencoarrays_version=1.9.0
@@ -43,6 +50,7 @@ fi
 
 echo "Build hook running"
 docker build --build-arg OPENCOARRAYS_VERSION="${opencoarrays_version}" \
+             --build-arg RUN_TESTS=${RUN_TESTS} \
              --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
              --build-arg VCS_REF="${SOURCE_COMMIT:-$(git rev-parse --short HEAD)}" \
              --build-arg VCS_URL="${d_vcs_url}" \

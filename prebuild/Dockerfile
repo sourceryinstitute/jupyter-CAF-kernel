@@ -73,6 +73,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
 
 COPY ./jupyter-caf-kernel jupyter-caf-kernel
 
+ARG RUN_TESTS=true
+
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && set -v \
     && echo "$DEBIAN_FRONTEND" \
@@ -87,7 +89,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && cd build \
     && FC=/usr/local/bin/gfortran CC=/usr/local/bin/gcc cmake .. \
     && make -j "$(nproc)" \
-    && ctest --output-on-failure \
+    && if [ "${RUN_TESTS}" == "true" ] ; then ctest --output-on-failure; fi \
     && make install \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
