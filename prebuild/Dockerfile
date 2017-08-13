@@ -1,54 +1,41 @@
-FROM jupyter/datascience-notebook
+FROM jupyter/datascience-notebook:5ded1de07260
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
 USER root
 
-ARG OPENCOARRAYS_VERSION=1.9.0
+ARG OPENCOARRAYS_VERSION=1.9.1
 ENV GCC_VERSION 7.1.0
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="dpkg-dev flex" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && set -v \
+    && cat /etc/issue \
+    && uname -a \
     && echo "${DEBIAN_FRONTEND}" \
-    && echo "deb http://httpredir.debian.org/debian jessie-backports main" >> /etc/apt/sources.list \
     && apt-get update -y \
-    && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
-    make \
-    libfile-pushd-perl \
-    libisl-dev \
-    libmpc-dev \
+    && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
+    && apt-get update -y \
+    && apt-get install -y \
+    build-essential \
+    gcc-7 \
+    gfortran-7 \
     ${transientBuildDeps} \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-7 \
+    && update-alternatives --set gcc "/usr/bin/gcc-7" \
     && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
     && echo "Patching build script for MPICH to disable c++ bindings" \
-    && sed -i '33 s/configure --prefix/configure --disable-cxx --prefix/' prerequisites/build-functions/build_and_install.sh \
-    && ./install.sh --only-download --package gcc --install-version ${GCC_VERSION} \
-    && cd prerequisites/downloads/ \
-    && tar xf gcc-${GCC_VERSION}.tar* \
-    && cd gcc-${GCC_VERSION} \
-    && mkdir objdir \
-    && cd objdir \
-    && ../configure --enable-languages=c,fortran --disable-multilib --disable-bootstrap --build="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
-    && make -j"$(nproc)" \
-    && make -j"$(nproc)" install-strip \
-    && cd ../.. \
-    && rm -rf ./gcc* \
-    && echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf \
-    && ldconfig -v\
-    && dpkg-divert --divert /usr/bin/gcc.orig --rename /usr/bin/gcc \
-    && dpkg-divert --divert /usr/bin/gfortran.orig --rename /usr/bin/gfortran \
-    && update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999 \
-    && /usr/local/bin/gcc --version \
+    && sed -i '/configure --prefix=/ s/configure --prefix/configure --disable-cxx --prefix/' prerequisites/build-functions/build_and_install.sh \
     && gcc --version \
-    && /usr/local/bin/gfortran --version \
     && gfortran --version \
-    && cd ../.. \
     && ./install.sh --yes-to-all --package mpich -j "$(nproc)" --install-prefix /usr/local \
     && cd .. \
-    && mpirun --version \
+    && mpiexec --version \
     && rm -rf OpenCoarrays-${OPENCOARRAYS_VERSION}/ \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
@@ -75,10 +62,10 @@ COPY ./jupyter-caf-kernel /jupyter/jupyter-caf-kernel
 
 ARG RUN_TESTS=true
 
-RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
+RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && set -v \
     && echo "${DEBIAN_FRONTEND}" \
-    && apt-get update && apt-get -t jessie-backports install -yq --no-install-recommends --no-install-suggests \
+    && apt-get update && apt-get install -y \
     ${transientBuildDeps} \
     && cmake --version \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
@@ -87,7 +74,9 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && echo "Installing OpenCoarrays using CMake in $(pwd)" \
     && mkdir build \
     && cd build \
-    && FC=/usr/local/bin/gfortran CC=/usr/local/bin/gcc cmake .. \
+    && gcc --version \
+    && gfortran --version \
+    && FC="`which gfortran`" CC="`which gcc`" cmake .. \
     && make -j "$(nproc)" \
     && if [ "${RUN_TESTS}" == "true" ] ; then ctest --output-on-failure; fi \
     && make install \
@@ -102,7 +91,11 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake" \
     && pip install JSAnimation \
     && pip install ipywidgets \
     && pip install bokeh \
-    && rmdir work \
+    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
+    && jupyter nbextension enable gist \
+    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
+    && curl -L https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
+    && jupyter nbextension enable toc \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
