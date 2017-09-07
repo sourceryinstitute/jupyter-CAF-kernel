@@ -7,6 +7,8 @@ USER root
 ARG OPENCOARRAYS_VERSION=1.9.1
 ENV GCC_VERSION 7.1.0
 
+ENV NUM_IMAGES 4
+
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && set -v \
     && cat /etc/issue \
