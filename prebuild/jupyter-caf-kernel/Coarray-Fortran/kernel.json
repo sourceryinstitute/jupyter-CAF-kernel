@@ -7,8 +7,5 @@
     "{connection_file}"
   ],
   "display_name": "Coarray Fortran",
-  "language": "Fortran",
-  "env": {
-    "NUM_IMAGES": "4"
-  }
+  "language": "Fortran"
 }

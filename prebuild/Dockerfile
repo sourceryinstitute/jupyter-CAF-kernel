@@ -109,4 +109,6 @@ RUN chown -R ${NB_USER}:users /home/${NB_USER}
 
 WORKDIR /home/${NB_USER}/
 
+ENV NUM_IMAGES 4
+
 USER ${NB_USER}
