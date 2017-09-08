@@ -7,8 +7,6 @@ USER root
 ARG OPENCOARRAYS_VERSION=1.9.1
 ENV GCC_VERSION 7.1.0
 
-ENV NUM_IMAGES 4
-
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && set -v \
     && cat /etc/issue \
@@ -110,5 +108,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
 RUN chown -R ${NB_USER}:users /home/${NB_USER}
 
 WORKDIR /home/${NB_USER}/
+
+ENV NUM_IMAGES 4
 
 USER ${NB_USER}
