@@ -1,11 +1,11 @@
-FROM jupyter/datascience-notebook:5ded1de07260
+FROM jupyter/datascience-notebook:da2c5a4d00fa
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
 USER root
 
-ARG OPENCOARRAYS_VERSION=1.9.1
-ENV GCC_VERSION 7.1.0
+ARG OPENCOARRAYS_VERSION=1.9.2
+ENV GCC_VERSION 7.2.0
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && set -v \
@@ -19,8 +19,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && apt-get update -y \
     && apt-get install -y \
     build-essential \
-    gcc-7 \
-    gfortran-7 \
+    gcc-7=${GCC_VERSION}-1ubuntu1~16.04 \
+    gfortran-7=${GCC_VERSION}-1ubuntu1~16.04 \
     ${transientBuildDeps} \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-7 \
     && update-alternatives --set gcc "/usr/bin/gcc-7" \
