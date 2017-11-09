@@ -1,4 +1,4 @@
-FROM sourceryinstitute/jupyter-caf-kernel@sha256:9820b4049897758216c1c60dc29d6d6773516ea2c0ed784b1a738ab368c7668d
+FROM sourceryinstitute/jupyter-caf-kernel@sha256:cf2aa6b479657b043d85f8c451a4862a2849367c561ffd1de6ddce3a91009aa3
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
