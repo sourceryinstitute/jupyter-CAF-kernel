@@ -21,22 +21,16 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     build-essential \
     gcc-7=${GCC_VERSION}-1ubuntu1~16.04 \
     gfortran-7=${GCC_VERSION}-1ubuntu1~16.04 \
+    g++-7=${GCC_VERSION}-1ubuntu1~16.04 \
+    mpich \
     ${transientBuildDeps} \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-7 \
     && update-alternatives --set gcc "/usr/bin/gcc-7" \
-    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
-    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
-    && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
-    && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
-    && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
-    && echo "Patching build script for MPICH to disable c++ bindings" \
-    && sed -i '/configure --prefix=/ s/configure --prefix/configure --disable-cxx --prefix/' prerequisites/build-functions/build_and_install.sh \
     && gcc --version \
     && gfortran --version \
-    && ./install.sh --yes-to-all --package mpich -j "$(nproc)" --install-prefix /usr/local \
-    && cd .. \
     && mpiexec --version \
-    && rm -rf OpenCoarrays-${OPENCOARRAYS_VERSION}/ \
+    && mpifort --version \
+    && mpicc --version \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
     && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
@@ -60,7 +54,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
 
 COPY ./jupyter-caf-kernel /jupyter/jupyter-caf-kernel
 
-ARG RUN_TESTS=true
+ARG RUN_TESTS=false
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && set -v \
@@ -68,6 +62,8 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && apt-get update && apt-get install -y \
     ${transientBuildDeps} \
     && cmake --version \
+    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
+    && wget -nv -t 3 https://github.com/sourceryinstitute/opencoarrays/releases/download/${OPENCOARRAYS_VERSION}/opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && sha256sum -c opencoarrays-${OPENCOARRAYS_VERSION}-SHA256.txt \
     && tar xzf OpenCoarrays-${OPENCOARRAYS_VERSION}.tar.gz \
     && cd OpenCoarrays-${OPENCOARRAYS_VERSION} \
@@ -78,7 +74,7 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && gfortran --version \
     && FC="`which gfortran`" CC="`which gcc`" cmake .. \
     && make -j "$(nproc)" \
-    && if [ "${RUN_TESTS}" == "true" ] ; then ctest --output-on-failure; fi \
+    && if [ "${RUN_TESTS}" = "true" ] ; then ctest --output-on-failure; fi \
     && make install \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \

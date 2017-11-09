@@ -39,7 +39,7 @@ d_tag="${d_tag:-${branch_name}-$(date +%s)}"
 if [[ ${IMAGE_NAME:-} ]]; then
   export RUN_TESTS=false
 else
-  export RUN_TESTS=true
+  export RUN_TESTS=${RUN_TESTS:-false}
 fi
 
 
