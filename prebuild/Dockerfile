@@ -82,6 +82,11 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && pip install -e /jupyter/jupyter-caf-kernel \
     && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
+    && pip install --no-cache-dir allthekernels \
+    && pip install --no-cache-dir mpld3 \
+    && pip install --no-cache-dir JSAnimation \
+    && pip install --no-cache-dir ipywidgets \
+    && pip install --no-cache-dir bokeh \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \

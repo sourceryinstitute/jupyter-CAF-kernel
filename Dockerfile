@@ -2,7 +2,9 @@ FROM sourceryinstitute/jupyter-caf-kernel@sha256:9820b4049897758216c1c60dc29d6d6
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
-COPY . ${HOME}
+COPY index.ipynb ${HOME}
+# COPY examples ${HOME}
+
 USER root
 RUN chown -R ${NB_UID} ${HOME}
 USER ${NB_USER}
