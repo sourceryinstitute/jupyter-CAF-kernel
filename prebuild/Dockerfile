@@ -1,4 +1,4 @@
-FROM jupyter/datascience-notebook:da2c5a4d00fa
+FROM jupyter/minimal-notebook:da2c5a4d00fa
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
@@ -73,25 +73,15 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && gcc --version \
     && gfortran --version \
     && FC="`which gfortran`" CC="`which gcc`" cmake .. \
-    && make -j "$(nproc)" \
+    && make -j "$(nproc)" install \
     && if [ "${RUN_TESTS}" = "true" ] ; then ctest --output-on-failure; fi \
-    && make install \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
+    && pip install --no-cache-dir notebook==5.* \
     && pip install -e /jupyter/jupyter-caf-kernel \
     && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
-    && pip install allthekernels \
-    && pip install mpld3 \
-    && pip install JSAnimation \
-    && pip install ipywidgets \
-    && pip install bokeh \
-    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
-    && jupyter nbextension enable gist \
-    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
-    && curl -L https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
-    && jupyter nbextension enable toc \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
@@ -106,5 +96,14 @@ RUN chown -R ${NB_USER}:users /home/${NB_USER}
 WORKDIR /home/${NB_USER}/
 
 ENV NUM_IMAGES 4
+
+ENV NB_USER jovyan
+ENV NB_UID 1000
+ENV HOME /home/${NB_USER}
+
+RUN adduser --disabled-password \
+    --gecos "Default user" \
+    --uid ${NB_UID} \
+    ${NB_USER} || true
 
 USER ${NB_USER}

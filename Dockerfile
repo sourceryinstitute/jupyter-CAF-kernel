@@ -1,8 +1,8 @@
-FROM sourceryinstitute/jupyter-caf-kernel@sha256:82b20bf27faa40887c6e0e6043768e4324a87701ae7f71b80688382713053c29
+FROM sourceryinstitute/jupyter-caf-kernel@sha256:9820b4049897758216c1c60dc29d6d6773516ea2c0ed784b1a738ab368c7668d
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
-COPY index.ipynb ./
-# COPY examples ./
-
-USER $NB_USER
+COPY . ${HOME}
+USER root
+RUN chown -R ${NB_UID} ${HOME}
+USER ${NB_USER}
