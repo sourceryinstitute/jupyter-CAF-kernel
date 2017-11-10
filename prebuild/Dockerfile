@@ -55,10 +55,15 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
 COPY ./jupyter-caf-kernel /jupyter/jupyter-caf-kernel
 
 ARG RUN_TESTS=false
+ARG RUN_AS_NB_USER="sudo -H -u ${NB_USER} bash -c"
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && set -v \
     && echo "${DEBIAN_FRONTEND}" \
+    &&  adduser --disabled-password \
+    --gecos "Default user" \
+    --uid ${NB_UID} \
+    ${NB_USER} || true \
     && apt-get update && apt-get install -y \
     ${transientBuildDeps} \
     && cmake --version \
@@ -78,29 +83,24 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
-    && pip install --no-cache-dir notebook==5.* \
-    && pip install -e /jupyter/jupyter-caf-kernel \
-    && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
-    && jupyter-kernelspec list \
-    && pip install --no-cache-dir allthekernels \
-    && pip install --no-cache-dir mpld3 \
-    && pip install --no-cache-dir JSAnimation \
-    && pip install --no-cache-dir ipywidgets \
-    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
-    && jupyter nbextension enable gist \
-    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
-    && wget -qO- https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
-    && jupyter nbextension enable toc \
+    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir notebook==5.*' \
+    && ${RUN_AS_NB_USER} 'pip install -e /jupyter/jupyter-caf-kernel' \
+    && ${RUN_AS_NB_USER} 'jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/' \
+    && ${RUN_AS_NB_USER} 'jupyter-kernelspec list' \
+    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir allthekernels' \
+    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir mpld3' \
+    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir JSAnimation' \
+    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir ipywidgets' \
+    && ${RUN_AS_NB_USER} 'jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js' \
+    && ${RUN_AS_NB_USER} 'jupyter nbextension enable gist' \
+    && ${RUN_AS_NB_USER} 'jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js' \
+    && ${RUN_AS_NB_USER} 'wget -qO- https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css' \
+    && ${RUN_AS_NB_USER} 'jupyter nbextension enable toc' \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
-    && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/*
-
-# RUN mkdir /jupyter
-
-# WORKDIR /jupyter
-
-RUN chown -R ${NB_USER}:users /home/${NB_USER}
+    && rm -rf /var/lib/apt/lists/* /var/log/* /tmp/* \
+    && chown -R ${NB_USER} /home/${NB_USER}
 
 WORKDIR /home/${NB_USER}/
 
@@ -109,10 +109,5 @@ ENV NUM_IMAGES 4
 ENV NB_USER jovyan
 ENV NB_UID 1000
 ENV HOME /home/${NB_USER}
-
-RUN adduser --disabled-password \
-    --gecos "Default user" \
-    --uid ${NB_UID} \
-    ${NB_USER} || true
 
 USER ${NB_USER}
