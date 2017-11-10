@@ -106,8 +106,8 @@ class CafKernel(Kernel):
                                   lambda contents: self._write_to_stderr(contents.decode()))
 
     def compile_with_caf_wrapper(self, source_filename, binary_filename, fcflags=None, ldflags=None):
-        args = ['caf', source_filename] + fcflags + ['-o', binary_filename] + ldflags
-        return self.create_jupyter_subprocess(args)
+        _args = ['caf', source_filename] + fcflags + ['-o', binary_filename] + ldflags
+        return self.create_jupyter_subprocess(_args)
 
     def _filter_magics(self, code):
 
@@ -120,18 +120,17 @@ class CafKernel(Kernel):
 
         for line in code.splitlines():
             if line.startswith('%'):
-                key, value = line[1:].split(":", 2)
-                key = key.strip().lower()
+                key, value = [item.strip() for item in line[1:].split(":", 2)]
+                key = key.lower()
 
                 if key in ['ldflags', 'fcflags']:
-                    for flag in value.split():
-                        magics[key] += [flag]
-                elif key == "args":
+                    magics[key] = [flag.strip() for flag in value.split()]
+                elif key == 'args':
                     # Split arguments respecting quotes
                     for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
                         magics['args'] += [argument.strip('"')]
-                elif key == "num_images":
-                    magics['num_images'] = value.strip()
+                elif key == 'num_images':
+                    magics['num_images'] = int(value.strip())
 
         return magics
 
@@ -157,7 +156,7 @@ class CafKernel(Kernel):
                                     p.returncode))
                     return {'status': 'ok', 'execution_count': self.execution_count, 'payload': [],
                             'user_expressions': {}}
-        _cmd = ['cafrun', '-np', magics['num_images'].strip(), binary_file.name ]
+        _cmd = ['cafrun', '-np', str(magics['num_images']).strip(), binary_file.name ]
         if magics['args']: _cmd + magics['args']
         p = self.create_jupyter_subprocess(_cmd)
         while p.poll() is None:
