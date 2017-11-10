@@ -91,8 +91,6 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
     && curl -L https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
     && jupyter nbextension enable toc \
-    && jupyter nbextension install --user https://raw.githubusercontent.com/merqurio/jupyter_themes/master/theme_selector.js \
-    && jupyter nbextension enable theme_selector \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
