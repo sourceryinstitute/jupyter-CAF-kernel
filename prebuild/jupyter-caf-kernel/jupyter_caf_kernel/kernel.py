@@ -114,7 +114,7 @@ class CafKernel(Kernel):
         magics = {'fcflags': [],
                   'ldflags': [],
                   'args': [],
-                  'num_images': os.getenv('NUM_IMAGES', '2')
+                  'num_images': os.getenv('NUM_IMAGES', '2').strip()
                 }
 
 
@@ -131,7 +131,7 @@ class CafKernel(Kernel):
                     for argument in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', value):
                         magics['args'] += [argument.strip('"')]
                 elif key == "num_images":
-                    magics['num_images'] = value
+                    magics['num_images'] = value.strip()
 
         return magics
 
@@ -157,8 +157,9 @@ class CafKernel(Kernel):
                                     p.returncode))
                     return {'status': 'ok', 'execution_count': self.execution_count, 'payload': [],
                             'user_expressions': {}}
-
-        p = self.create_jupyter_subprocess(['cafrun', '-np', str(magics['num_images']), binary_file.name] + magics['args'])
+        _cmd = ['cafrun', '-np', magics['num_images'].strip(), binary_file.name ]
+        if magics['args']: _cmd + magics['args']
+        p = self.create_jupyter_subprocess(_cmd)
         while p.poll() is None:
             p.write_contents()
         p.write_contents()
