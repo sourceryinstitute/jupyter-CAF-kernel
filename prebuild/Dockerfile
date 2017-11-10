@@ -1,4 +1,4 @@
-FROM jupyter/minimal-notebook:da2c5a4d00fa
+FROM jupyter/datascience-notebook:da2c5a4d00fa
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
@@ -86,7 +86,13 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && pip install --no-cache-dir mpld3 \
     && pip install --no-cache-dir JSAnimation \
     && pip install --no-cache-dir ipywidgets \
-    && pip install --no-cache-dir bokeh \
+    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
+    && jupyter nbextension enable gist \
+    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
+    && curl -L https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
+    && jupyter nbextension enable toc \
+    && jupyter nbextension install --user https://raw.githubusercontent.com/merqurio/jupyter_themes/master/theme_selector.js \
+    && jupyter nbextension enable theme_selector \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
