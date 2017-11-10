@@ -4,7 +4,3 @@ MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
 COPY index.ipynb ${HOME}
 # COPY examples ${HOME}
-
-USER root
-RUN chown -R ${NB_UID} ${HOME}
-USER ${NB_USER}

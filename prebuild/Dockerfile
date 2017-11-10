@@ -4,6 +4,10 @@ MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
 USER root
 
+ENV NB_USER jovyan
+ENV NB_UID 1000
+ENV HOME /home/${NB_USER}
+
 ARG OPENCOARRAYS_VERSION=1.9.2
 ENV GCC_VERSION 7.2.0
 
@@ -105,9 +109,5 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
 WORKDIR /home/${NB_USER}/
 
 ENV NUM_IMAGES 4
-
-ENV NB_USER jovyan
-ENV NB_UID 1000
-ENV HOME /home/${NB_USER}
 
 USER ${NB_USER}
