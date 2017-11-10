@@ -18,10 +18,7 @@
    using [Binder]: __http://bit.ly/TryCoarrays__  
    This will open the [`index.ipynb`] file in an interactive
    environment using [Binder].
- * Launch a full JupyterHub [Binder] environment in the cloud with access
-   to
-   [other science kernels][jupyter-stacks] in
-   addition to Fortran with [OpenCoarrays]: __http://bit.ly/CAF-Binder__
+ * Launch a full JupyterHub [Binder] Fortran environment in the cloud with [OpenCoarrays]: __http://bit.ly/CAF-Binder__
 
 ## Run locally
 
@@ -101,7 +98,7 @@ Contributions are most welcome!
  * [ ] Use proper Python OOP class extension & better understand base class
  * [ ] Improve I/O
  * [ ] Improve exception handling and error reporting
- * [ ] Improve magics
+ * [x] Improve magics
  * [ ] Use [MetaKernel] to build the kernel and magics
  * [ ] Allow use of all aplicable [MetaKernel magics]
  * [ ] Don't attempt to compile code when only magics are present
