@@ -87,19 +87,15 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && cd \
     && rm -rf OpenCoarrays* opencoarrays* \
     && caf --version \
-    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir notebook==5.*' \
-    && ${RUN_AS_NB_USER} 'pip install -e /jupyter/jupyter-caf-kernel' \
-    && ${RUN_AS_NB_USER} 'jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/' \
-    && ${RUN_AS_NB_USER} 'jupyter-kernelspec list' \
-    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir allthekernels' \
-    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir mpld3' \
-    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir JSAnimation' \
-    && ${RUN_AS_NB_USER} 'pip install --no-cache-dir ipywidgets' \
-    && ${RUN_AS_NB_USER} 'jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js' \
-    && ${RUN_AS_NB_USER} 'jupyter nbextension enable gist' \
-    && ${RUN_AS_NB_USER} 'jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js' \
-    && ${RUN_AS_NB_USER} 'wget -qO- https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css' \
-    && ${RUN_AS_NB_USER} 'jupyter nbextension enable toc' \
+    && pip install --no-cache-dir notebook==5.* \
+    && pip install -e /jupyter/jupyter-caf-kernel \
+    && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
+    && jupyter-kernelspec list \
+    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
+    && jupyter nbextension enable gist \
+    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
+    && wget -qO- https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
+    && jupyter nbextension enable toc \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \
