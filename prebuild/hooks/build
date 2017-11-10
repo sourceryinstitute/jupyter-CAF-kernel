@@ -35,6 +35,7 @@ branch_name="${branch_name:-DETACHED-HEAD}"
 d_vcs_describe="$(git describe --tags --always || true)"
 d_tag="${IMAGE_NAME##*:}"
 d_tag="${d_tag:-${branch_name}-$(date +%s)}"
+d_vcs_tag="$(git rev-parse --short=12 --verify HEAD)"
 
 if [[ ${IMAGE_NAME:-} ]]; then
   export RUN_TESTS=false
@@ -58,3 +59,4 @@ docker build --build-arg OPENCOARRAYS_VERSION="${opencoarrays_version}" \
 	     --rm \
 	     --pull \
              -t "${IMAGE_NAME:-$(tr '[:upper:]' '[:lower:]' <<< "${d_repo}:latest")}" .
+docker tag "${IMAGE_NAME:-$(tr '[:upper:]' '[:lower:]' <<< "${d_repo}:latest")}" "${IMAGE_NAME:-$(tr '[:upper:]' '[:lower:]' <<< "${d_repo}:${d_vcs_tag}")}"

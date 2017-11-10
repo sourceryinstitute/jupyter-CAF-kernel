@@ -1,6 +1,7 @@
 SHELL := /usr/local/bin/bash -o pipefail
 NAME = sourceryinstitute/jupyter-caf-kernel
 UBADGER_ENDPOINT = "https://hooks.microbadger.com/images/sourceryinstitute/jupyter-caf-kernel/CEL6DIVw-OVbUIXieZhZwvDXl3I="
+GIT_MASTER_HEAD_SHA:=$(shell git rev-parse --short=12 --verify HEAD)
 #WORKDIR = ${HOME}/Sandbox
 
 .PHONY: help build push run runclean clean
@@ -17,12 +18,14 @@ build: $(subst /,_,$(NAME))-build.stamp ## Build docker file. Depending on which
 $(subst /,_,$(NAME))-build.stamp: Dockerfile .dockerignore hooks/build ## Target for doing & timestamping the build
 	touch $@
 	hooks/build 2>&1 | tee $(subst stamp,log,$@) || rm -rf $@
+	docker tag $(NAME):latest $(NAME):$(GIT_MASTER_HEAD_SHA)
 
 push: $(subst /,_,$(NAME))-push.stamp ## Push prebuild docker image up to hub.docker.com
 
 $(subst /,_,$(NAME))-push.stamp: $(subst /,_,$(NAME))-build.stamp Dockerfile .dockerignore hooks/build ## Target for doing & timestamping the push
 	touch $@
-	docker push $(NAME) | tee $(subst stamp,log,$@) || rm -rf $@
+	docker push $(NAME):latest | tee $(subst stamp,log,$@) || rm -rf $@
+	docker push $(NAME):$(GIT_MASTER_HEAD_SHA) | tee -a $(subst stamp,log,$@) || rm -rf $@
 	-curl -X POST "$(UBADGER_ENDPOINT)"
 
 run: ## Target to run jupyter-hub docker server
