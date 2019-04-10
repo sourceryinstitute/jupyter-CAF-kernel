@@ -1,4 +1,4 @@
-FROM jupyter/minimal-notebook:da2c5a4d00fa
+FROM jupyter/minimal-notebook:4cdbc9cdb7d1
 
 MAINTAINER Izaak Beekman <izaak@izaakbeekman.com>
 
@@ -8,8 +8,8 @@ ENV NB_USER jovyan
 ENV NB_UID 1000
 ENV HOME /home/${NB_USER}
 
-ARG OPENCOARRAYS_VERSION=1.9.2
-ENV GCC_VERSION 7.2.0
+ARG OPENCOARRAYS_VERSION=2.6.2
+ENV GCC_VERSION 8.2.0
 
 RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && set -v \
@@ -23,13 +23,13 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="file" \
     && apt-get update -y \
     && apt-get install -y \
     build-essential \
-    gcc-7=${GCC_VERSION}-1ubuntu1~16.04 \
-    gfortran-7=${GCC_VERSION}-1ubuntu1~16.04 \
-    g++-7=${GCC_VERSION}-1ubuntu1~16.04 \
+    gcc-8 \
+    gfortran-8 \
+    g++-8 \
     mpich \
     ${transientBuildDeps} \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-7 \
-    && update-alternatives --set gcc "/usr/bin/gcc-7" \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-8 \
+    && update-alternatives --set gcc "/usr/bin/gcc-8" \
     && gcc --version \
     && gfortran --version \
     && mpiexec --version \
@@ -91,11 +91,6 @@ RUN DEBIAN_FRONTEND=noninteractive transientBuildDeps="cmake git" \
     && pip install -e /jupyter/jupyter-caf-kernel \
     && jupyter-kernelspec install /jupyter/jupyter-caf-kernel/Coarray-Fortran/ \
     && jupyter-kernelspec list \
-    && jupyter nbextension install https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/gist.js \
-    && jupyter nbextension enable gist \
-    && jupyter nbextension install --user https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.js \
-    && wget -qO- https://rawgithub.com/minrk/ipython_extensions/master/nbextensions/toc.css > $(jupyter --data-dir)/nbextensions/toc.css \
-    && jupyter nbextension enable toc \
     && rm -rf jupyter-caf-kernel \
     && apt-get clean \
     && apt-get purge -y --auto-remove ${transientBuildDeps} \

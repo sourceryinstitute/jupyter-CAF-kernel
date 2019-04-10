@@ -46,7 +46,7 @@ fi
 
 opencoarrays_version="$(curl -s https://api.github.com/repos/sourceryinstitute/OpenCoarrays/releases/latest | grep tag_name | cut -d '"' -f 4)" || true
 if [[ -n "${open_coarrays_version:-}" ]]; then
-  opencoarrays_version=1.9.2
+  opencoarrays_version=2.6.2
 fi
 
 echo "Build hook running"

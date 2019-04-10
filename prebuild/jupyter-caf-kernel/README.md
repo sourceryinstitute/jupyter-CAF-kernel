@@ -74,7 +74,7 @@ or [via Docker, as described above](#Run-locally). If you decide to
 install this kernel locally on your system you will need the following
 software packages installed:
 
- * GCC and [GFortran] >= 7.1
+ * GCC and [GFortran] >= 8.2
  * [MPICH] >= 3.2
  * [OpenCoarrays]
  * [Jupyter]
